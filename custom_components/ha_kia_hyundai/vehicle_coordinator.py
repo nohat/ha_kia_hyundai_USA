@@ -416,21 +416,11 @@ class VehicleCoordinator(DataUpdateCoordinator):
     def _report_age_minutes(data: dict[str, Any]) -> int | None:
         """Minutes since the car last reported to the cloud, from the fetched data.
 
-        Prefers remoteWaitingTimeAlert.elapsedTime (car-side H:MM:SS counter);
-        falls back to the report's UTC timestamp.
+        Uses the report's UTC timestamp. (remoteWaitingTimeAlert.elapsedTime is
+        deliberately NOT used: it measures time since the last drive ended, not
+        time since the last report, and it is frozen in the cloud copy between
+        reports - verified against a 2023 GV60.)
         """
-        raw = safely_get_json_value(
-            data,
-            "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.remoteWaitingTimeAlert.elapsedTime",
-            str,
-        )
-        if raw:
-            try:
-                parts = [int(p) for p in raw.split(":")]
-                if len(parts) == 3:
-                    return parts[0] * 60 + parts[1]
-            except ValueError:
-                pass
         stamp = safely_get_json_value(
             data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.dateTime.utc", str
         )
