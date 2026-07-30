@@ -231,6 +231,11 @@ async def _get_or_create_api_connection(
         return api_connection
 
 
+async def _async_options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+    """Reload the config entry when options change so the new values take effect."""
+    await hass.config_entries.async_reload(config_entry.entry_id)
+
+
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Set up Kia/Hyundai/Genesis US from a config entry.
 
@@ -372,6 +377,11 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
         # Set up services (not async, don't await)
         async_setup_services(hass)
+
+        # Apply options changes (e.g. scan interval) by reloading the entry
+        config_entry.async_on_unload(
+            config_entry.add_update_listener(_async_options_update_listener)
+        )
 
         return True
 
