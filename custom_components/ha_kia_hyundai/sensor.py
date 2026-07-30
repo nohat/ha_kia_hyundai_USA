@@ -17,6 +17,7 @@ from homeassistant.const import (
     UnitOfLength,
     UnitOfTemperature,
     UnitOfTime,
+    EntityCategory,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -161,8 +162,62 @@ SENSOR_DESCRIPTIONS: Final[tuple[KiaSensorEntityDescription, ...]] = (
         native_unit_of_measurement=None,
         preserve_state=True,
     ),
+    KiaSensorEntityDescription(
+        key="charge_time_remaining",
+        name="Charge Time Remaining",
+        icon="mdi:battery-clock",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        state_class=SensorStateClass.MEASUREMENT,
+        exists_fn=lambda c: c.is_ev,
+    ),
+    KiaSensorEntityDescription(
+        key="charge_time_estimate_dc",
+        name="Charge Time Estimate - DC Fast",
+        icon="mdi:battery-clock-outline",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        exists_fn=lambda c: c.is_ev,
+    ),
+    KiaSensorEntityDescription(
+        key="charge_time_estimate_ac",
+        name="Charge Time Estimate - AC Level 2",
+        icon="mdi:battery-clock-outline",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        exists_fn=lambda c: c.is_ev,
+    ),
+    KiaSensorEntityDescription(
+        key="charge_time_estimate_level1",
+        name="Charge Time Estimate - 120V",
+        icon="mdi:battery-clock-outline",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        exists_fn=lambda c: c.is_ev,
+    ),
+    KiaSensorEntityDescription(
+        key="remote_contact_elapsed_minutes",
+        name="Time Since Car Contact",
+        icon="mdi:timer-sand",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    KiaSensorEntityDescription(
+        key="charge_port_lock_mode",
+        name="Charge Port Lock Mode",
+        icon="mdi:ev-plug-type1",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        exists_fn=lambda c: c.is_ev,
+    ),
 )
-
 SEAT_SENSOR_DESCRIPTIONS: Final[tuple[KiaSensorEntityDescription, ...]] = (
     KiaSensorEntityDescription(
         key="climate_driver_seat",

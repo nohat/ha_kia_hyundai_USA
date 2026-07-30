@@ -387,6 +387,122 @@ class VehicleCoordinator(DataUpdateCoordinator):
         ) or 0
 
     @property
+    def window_front_left_open(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.windowStatus.frontLeft", bool)
+
+    @property
+    def window_front_right_open(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.windowStatus.frontRight", bool)
+
+    @property
+    def window_rear_left_open(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.windowStatus.backLeft", bool)
+
+    @property
+    def window_rear_right_open(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.windowStatus.backRight", bool)
+
+    @property
+    def sunroof_open(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.sunroofOpen", bool)
+
+    @property
+    def tire_pressure_warning_any(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.tirePressureLamp.tirePressureWarningLampAll", bool)
+
+    @property
+    def tire_pressure_warning_front_left(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.tirePressureLamp.tirePressureWarningLampFrontLeft", bool)
+
+    @property
+    def tire_pressure_warning_front_right(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.tirePressureLamp.tirePressureWarningLampFrontRight", bool)
+
+    @property
+    def tire_pressure_warning_rear_left(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.tirePressureLamp.tirePressureWarningLampRearLeft", bool)
+
+    @property
+    def tire_pressure_warning_rear_right(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.tirePressureLamp.tirePressureWarningLampRearRight", bool)
+
+    @property
+    def key_fob_battery_low(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.smartKeyBatteryWarning", bool)
+
+    @property
+    def washer_fluid_low(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.washerFluidStatus", bool)
+
+    @property
+    def brake_fluid_warning(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.breakOilStatus", bool)
+
+    @property
+    def car_sleep_mode(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.sleepModeCheck", bool)
+
+    @property
+    def remote_commands_available(self) -> bool | None:
+        raw = safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.remoteWaitingTimeAlert.remoteControlAvailable", int)
+        return None if raw is None else raw == 1
+
+    @property
+    def remote_contact_elapsed_minutes(self) -> int | None:
+        """Minutes since the car last contacted the cloud, per remoteWaitingTimeAlert.elapsedTime (H:MM:SS)."""
+        raw = safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.remoteWaitingTimeAlert.elapsedTime", str)
+        if not raw:
+            return None
+        try:
+            parts = [int(p) for p in raw.split(":")]
+            if len(parts) == 3:
+                return parts[0] * 60 + parts[1]
+            if len(parts) == 2:
+                return parts[0]
+        except ValueError:
+            return None
+        return None
+
+    @property
+    def lamp_failure_warning(self) -> bool | None:
+        lamps = safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.lampWireStatus", dict)
+        if not lamps:
+            return None
+        def any_true(obj):
+            if isinstance(obj, dict):
+                return any(any_true(v) for v in obj.values())
+            return obj is True
+        return any_true(lamps)
+
+    @property
+    def battery_preconditioning(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.batteryPrecondition", bool)
+
+    @property
+    def v2l_capable(self) -> bool:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.v2L", bool)
+
+    @property
+    def charge_port_lock_mode(self) -> int | None:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.inletLockModeStatus", int)
+
+    @property
+    def charge_time_remaining(self) -> int | None:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.remainChargeTime.atc.value", int)
+
+    @property
+    def charge_time_estimate_dc(self) -> int | None:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.remainChargeTime.etc1.value", int)
+
+    @property
+    def charge_time_estimate_ac(self) -> int | None:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.remainChargeTime.etc2.value", int)
+
+    @property
+    def charge_time_estimate_level1(self) -> int | None:
+        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.remainChargeTime.etc3.value", int)
+
+    @property
     def door_hood_open(self) -> bool:
         """Return if hood is open."""
         return safely_get_json_value(

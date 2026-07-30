@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Final
 from collections.abc import Callable
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import STATE_UNAVAILABLE
+from homeassistant.const import STATE_UNAVAILABLE, EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorEntityDescription, \
     BinarySensorDeviceClass
@@ -33,7 +33,7 @@ BINARY_SENSOR_DESCRIPTIONS: Final[tuple[KiaBinarySensorEntityDescription, ...]] 
         key="doors_locked",
         name="Locked",
         icon="mdi:lock",
-        device_class=BinarySensorDeviceClass.DOOR,
+        device_class=BinarySensorDeviceClass.LOCK,
     ),
     KiaBinarySensorEntityDescription(
         key="door_hood_open",
@@ -145,8 +145,117 @@ BINARY_SENSOR_DESCRIPTIONS: Final[tuple[KiaBinarySensorEntityDescription, ...]] 
         device_class=BinarySensorDeviceClass.RUNNING,
         exists_fn=lambda c: c.is_ev,  # Only show for EVs
     ),
+    KiaBinarySensorEntityDescription(
+        key="window_front_left_open",
+        name="Window - Front Left",
+        device_class=BinarySensorDeviceClass.WINDOW,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="window_front_right_open",
+        name="Window - Front Right",
+        device_class=BinarySensorDeviceClass.WINDOW,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="window_rear_left_open",
+        name="Window - Rear Left",
+        device_class=BinarySensorDeviceClass.WINDOW,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="window_rear_right_open",
+        name="Window - Rear Right",
+        device_class=BinarySensorDeviceClass.WINDOW,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="sunroof_open",
+        name="Sunroof",
+        device_class=BinarySensorDeviceClass.WINDOW,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="tire_pressure_warning_any",
+        name="Tire Pressure Warning",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="tire_pressure_warning_front_left",
+        name="Tire Pressure Warning - Front Left",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="tire_pressure_warning_front_right",
+        name="Tire Pressure Warning - Front Right",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="tire_pressure_warning_rear_left",
+        name="Tire Pressure Warning - Rear Left",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="tire_pressure_warning_rear_right",
+        name="Tire Pressure Warning - Rear Right",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="key_fob_battery_low",
+        name="Key Fob Battery Low",
+        device_class=BinarySensorDeviceClass.BATTERY,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="washer_fluid_low",
+        name="Washer Fluid Low",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="brake_fluid_warning",
+        name="Brake Fluid Warning",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="lamp_failure_warning",
+        name="Lamp Failure Warning",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="car_sleep_mode",
+        name="Sleep Mode",
+        on_icon="mdi:sleep",
+        off_icon="mdi:sleep-off",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="remote_commands_available",
+        name="Remote Commands Available",
+        device_class=BinarySensorDeviceClass.CONNECTIVITY,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="battery_preconditioning",
+        name="Battery Preconditioning",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        exists_fn=lambda c: c.is_ev,
+    ),
+    KiaBinarySensorEntityDescription(
+        key="v2l_capable",
+        name="V2L Capable",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        exists_fn=lambda c: c.is_ev,
+    ),
 )
-
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ):
