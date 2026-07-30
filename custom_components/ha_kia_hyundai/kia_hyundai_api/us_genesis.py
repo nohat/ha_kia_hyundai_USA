@@ -657,6 +657,20 @@ class UsGenesis:
                         "batteryStatus": {
                             "stateOfCharge": vehicle_status.get("battery", {}).get("batSoc", 0),
                         },
+                        "windowStatus": {
+                            "frontLeft": 1 if vehicle_status.get("windowOpen", {}).get("frontLeft") else 0,
+                            "frontRight": 1 if vehicle_status.get("windowOpen", {}).get("frontRight") else 0,
+                            "backLeft": 1 if vehicle_status.get("windowOpen", {}).get("backLeft") else 0,
+                            "backRight": 1 if vehicle_status.get("windowOpen", {}).get("backRight") else 0,
+                        },
+                        "sunroofOpen": bool(vehicle_status.get("sunroofOpen")),
+                        "tirePressureLamp": vehicle_status.get("tirePressureLamp", {}),
+                        "smartKeyBatteryWarning": bool(vehicle_status.get("smartKeyBatteryWarning")),
+                        "washerFluidStatus": bool(vehicle_status.get("washerFluidStatus")),
+                        "breakOilStatus": bool(vehicle_status.get("breakOilStatus")),
+                        "sleepModeCheck": bool(vehicle_status.get("sleepModeCheck")),
+                        "remoteWaitingTimeAlert": vehicle_status.get("remoteWaitingTimeAlert", {}),
+                        "lampWireStatus": vehicle_status.get("lampWireStatus", {}),
                     },
                 },
             },
@@ -672,6 +686,9 @@ class UsGenesis:
                 "drvDistance": ev_status.get("drvDistance", []),
                 "remainChargeTime": ev_status.get("remainTime2", {}),
                 "targetSOC": ev_status.get("reservChargeInfos", {}).get("targetSOClist", []),
+                "batteryPrecondition": ev_status.get("batteryPrecondition", False),
+                "inletLockModeStatus": ev_status.get("inletLockModeStatus"),
+                "v2L": ev_status.get("v2L", False),
             }
 
         if location:
