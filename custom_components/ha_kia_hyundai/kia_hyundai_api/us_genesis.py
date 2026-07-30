@@ -932,7 +932,7 @@ class UsGenesis:
 
         url = GENESIS_API_URL_BASE + "rmt/getRunningStatus"
         try:
-            response = await self._post_request_with_logging_and_errors_raised(
+            response = await self._get_request_with_logging_and_errors_raised(
                 url=url,
                 headers=headers,
             )
