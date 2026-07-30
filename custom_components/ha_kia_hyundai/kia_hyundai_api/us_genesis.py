@@ -768,6 +768,15 @@ class UsGenesis:
         is_ev = vehicle.get("evStatus") == "E"
         generation = vehicle.get("generation", 2)
 
+        if duration is not None and generation < 3:
+            _LOGGER.warning(
+                "start_climate: 'duration' is not supported for generation-%s vehicles "
+                "(the BlueLink API rejects the field with HTTP 502); ignoring it. "
+                "The vehicle will run its built-in default climate runtime.",
+                generation,
+            )
+            duration = None
+
         if is_ev:
             url = GENESIS_API_URL_BASE + "evc/fatc/start"
         else:
