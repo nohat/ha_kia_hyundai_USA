@@ -557,22 +557,33 @@ class UsGenesis:
         vehicle_status = response_json.get("vehicleStatus", {})
 
         # Get location; GV60 may expose coordinates in vehicleStatus while findMyCar times out.
+        # Skip findMyCar entirely once the API has said the subscription lacks the feature -
+        # that answer does not change between polls.
         location = None
-        try:
-            loc_url = GENESIS_API_URL_BASE + "rcs/rfc/findMyCar"
-            _LOGGER.debug("Genesis findMyCar URL: %s", loc_url)
-            loc_response = await asyncio.wait_for(
-                self._get_request_with_logging_and_errors_raised(
-                    url=loc_url,
-                    headers=headers,
-                ),
-                timeout=10,
-            )
-            loc_json = await loc_response.json()
-            if loc_json.get("coord"):
-                location = loc_json
-        except Exception as e:
-            _LOGGER.debug("Failed to get location: %s", e)
+        if not hasattr(self, "_find_my_car_unavailable"):
+            self._find_my_car_unavailable: set[str] = set()
+        if vehicle_id not in self._find_my_car_unavailable:
+            try:
+                loc_url = GENESIS_API_URL_BASE + "rcs/rfc/findMyCar"
+                _LOGGER.debug("Genesis findMyCar URL: %s", loc_url)
+                loc_response = await asyncio.wait_for(
+                    self._get_request_with_logging_and_errors_raised(
+                        url=loc_url,
+                        headers=headers,
+                    ),
+                    timeout=10,
+                )
+                loc_json = await loc_response.json()
+                if loc_json.get("coord"):
+                    location = loc_json
+            except Exception as e:
+                _LOGGER.debug("Failed to get location: %s", e)
+                if "subscription" in str(e).lower():
+                    _LOGGER.info(
+                        "findMyCar is not included in this subscription; "
+                        "using vehicleStatus location and skipping findMyCar on future polls"
+                    )
+                    self._find_my_car_unavailable.add(vehicle_id)
 
         if location is None:
             status_location = vehicle_status.get("vehicleLocation") or {}
