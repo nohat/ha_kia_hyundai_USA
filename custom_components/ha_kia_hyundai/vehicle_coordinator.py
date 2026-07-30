@@ -449,7 +449,7 @@ class VehicleCoordinator(DataUpdateCoordinator):
 
     @property
     def remote_contact_elapsed_minutes(self) -> int | None:
-        """Minutes since the car last contacted the cloud, per remoteWaitingTimeAlert.elapsedTime (H:MM:SS)."""
+        """Minutes since the last drive ended, per remoteWaitingTimeAlert.elapsedTime (H:MM:SS, car-side counter; static between reports)."""
         raw = safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.remoteWaitingTimeAlert.elapsedTime", str)
         if not raw:
             return None

@@ -203,7 +203,7 @@ SENSOR_DESCRIPTIONS: Final[tuple[KiaSensorEntityDescription, ...]] = (
     ),
     KiaSensorEntityDescription(
         key="remote_contact_elapsed_minutes",
-        name="Time Since Car Contact",
+        name="Time Since Last Drive",
         icon="mdi:timer-sand",
         device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.MINUTES,
