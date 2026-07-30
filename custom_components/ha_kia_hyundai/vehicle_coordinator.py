@@ -475,10 +475,6 @@ class VehicleCoordinator(DataUpdateCoordinator):
         return any_true(lamps)
 
     @property
-    def battery_preconditioning(self) -> bool:
-        return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.batteryPrecondition", bool)
-
-    @property
     def v2l_capable(self) -> bool:
         return safely_get_json_value(self.data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.v2L", bool)
 

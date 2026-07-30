@@ -243,12 +243,6 @@ BINARY_SENSOR_DESCRIPTIONS: Final[tuple[KiaBinarySensorEntityDescription, ...]] 
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     KiaBinarySensorEntityDescription(
-        key="battery_preconditioning",
-        name="Battery Preconditioning",
-        device_class=BinarySensorDeviceClass.RUNNING,
-        exists_fn=lambda c: c.is_ev,
-    ),
-    KiaBinarySensorEntityDescription(
         key="v2l_capable",
         name="V2L Capable",
         entity_category=EntityCategory.DIAGNOSTIC,
