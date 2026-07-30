@@ -55,7 +55,8 @@
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Scan Interval (minutes)"
+          "scan_interval": "Scan Interval (minutes)",
+          "adaptive_polling": "Adaptive polling (faster after activity, slower when idle)"
         }
       }
     }

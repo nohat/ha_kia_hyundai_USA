@@ -32,6 +32,8 @@ from .kia_hyundai_api.us_hyundai import UsHyundai
 from .kia_hyundai_api.us_genesis import UsGenesis
 
 from .const import (
+    CONF_ADAPTIVE_POLLING,
+    DEFAULT_ADAPTIVE_POLLING,
     CONF_BRAND,
     CONF_DEVICE_ID,
     CONF_PIN,
@@ -250,6 +252,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     scan_interval = timedelta(
         minutes=config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     )
+    adaptive_polling = config_entry.options.get(
+        CONF_ADAPTIVE_POLLING, DEFAULT_ADAPTIVE_POLLING
+    )
 
     _LOGGER.info("Setting up %s integration for account %s with %d vehicles",
                  brand_name, username, len(vehicles_config))
@@ -347,6 +352,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                 vehicle_model=vehicle_model,
                 api_connection=api_connection,
                 scan_interval=scan_interval,
+                adaptive_polling=adaptive_polling,
             )
 
             # Do first refresh
