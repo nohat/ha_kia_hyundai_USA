@@ -41,7 +41,8 @@
       "init": {
         "title": "Kia Hyundai Genesis (USA): Configuration",
         "data": {
-          "scan_interval": "Scan Interval in Minutes"
+          "scan_interval": "Scan Interval in Minutes",
+          "adaptive_polling": "Adaptive polling (faster after activity, slower when idle)"
         }
       }
     }
