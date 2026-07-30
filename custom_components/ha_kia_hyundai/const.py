@@ -30,6 +30,16 @@ BRANDS = {
 CONFIG_FLOW_TEMP_VEHICLES: str = "_temp_vehicles"
 
 DEFAULT_SCAN_INTERVAL: int = 10
+CONF_ADAPTIVE_POLLING: str = "adaptive_polling"
+DEFAULT_ADAPTIVE_POLLING: bool = False
+# Adaptive polling tunables (minutes unless noted)
+ADAPTIVE_POST_ACTIVITY_WINDOW: int = 15   # report younger than this => fast polling
+ADAPTIVE_POST_ACTIVITY_INTERVAL: int = 2
+ADAPTIVE_CHARGING_INTERVAL: int = 10
+ADAPTIVE_DORMANT_AFTER_MINUTES: int = 360  # no car report for this long => dormant
+ADAPTIVE_DORMANT_MAX_INTERVAL: int = 60
+ADAPTIVE_NIGHT_START_HOUR: int = 23        # local time night window (dormant unless charging)
+ADAPTIVE_NIGHT_END_HOUR: int = 7
 DELAY_BETWEEN_ACTION_IN_PROGRESS_CHECKING: int = 20
 TEMPERATURE_MIN = 62
 TEMPERATURE_MAX = 82

@@ -24,7 +24,16 @@ from homeassistant.helpers.update_coordinator import (
 from .kia_hyundai_api import UsKia
 from .kia_hyundai_api.us_hyundai import UsHyundai
 from .kia_hyundai_api.us_genesis import UsGenesis
+from random import uniform
+
 from .const import (
+    ADAPTIVE_POST_ACTIVITY_WINDOW,
+    ADAPTIVE_POST_ACTIVITY_INTERVAL,
+    ADAPTIVE_CHARGING_INTERVAL,
+    ADAPTIVE_DORMANT_AFTER_MINUTES,
+    ADAPTIVE_DORMANT_MAX_INTERVAL,
+    ADAPTIVE_NIGHT_START_HOUR,
+    ADAPTIVE_NIGHT_END_HOUR,
     DOMAIN,
     DELAY_BETWEEN_ACTION_IN_PROGRESS_CHECKING,
     TEMPERATURE_MAX,
@@ -61,12 +70,15 @@ class VehicleCoordinator(DataUpdateCoordinator):
         vehicle_model: str,
         api_connection: ApiConnection,
         scan_interval: timedelta,
+        adaptive_polling: bool = False,
     ) -> None:
         """Initialize the coordinator."""
         self.vehicle_id: str = vehicle_id
         self.vehicle_name: str = vehicle_name
         self.vehicle_model: str = vehicle_model
         self.api_connection: ApiConnection = api_connection
+        self.adaptive_polling: bool = adaptive_polling
+        self.base_scan_interval: timedelta = scan_interval
 
         request_refresh_debouncer = Debouncer(
             hass,
@@ -118,6 +130,19 @@ class VehicleCoordinator(DataUpdateCoordinator):
                 target_soc.sort(key=lambda x: x["plugType"])
 
             new_data["last_action_status"] = self.api_connection.last_action
+
+            if self.adaptive_polling:
+                new_interval = self._compute_adaptive_interval(new_data)
+                if self.update_interval is None or abs(
+                    (new_interval - self.update_interval).total_seconds()
+                ) > 60:
+                    _LOGGER.info(
+                        "Adaptive polling: next interval %.1f min (was %s)",
+                        new_interval.total_seconds() / 60,
+                        self.update_interval,
+                    )
+                self.update_interval = new_interval
+
             return new_data
 
         super().__init__(
@@ -385,6 +410,81 @@ class VehicleCoordinator(DataUpdateCoordinator):
             "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.climate.heatingAccessory.steeringWheelStep",
             int,
         ) or 0
+
+
+    @staticmethod
+    def _report_age_minutes(data: dict[str, Any]) -> int | None:
+        """Minutes since the car last reported to the cloud, from the fetched data.
+
+        Prefers remoteWaitingTimeAlert.elapsedTime (car-side H:MM:SS counter);
+        falls back to the report's UTC timestamp.
+        """
+        raw = safely_get_json_value(
+            data,
+            "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.remoteWaitingTimeAlert.elapsedTime",
+            str,
+        )
+        if raw:
+            try:
+                parts = [int(p) for p in raw.split(":")]
+                if len(parts) == 3:
+                    return parts[0] * 60 + parts[1]
+            except ValueError:
+                pass
+        stamp = safely_get_json_value(
+            data, "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.dateTime.utc", str
+        )
+        if stamp and len(stamp) == 14:
+            try:
+                report_dt = datetime.strptime(stamp, "%Y%m%d%H%M%S").replace(
+                    tzinfo=dt_util.UTC
+                )
+                return int((dt_util.utcnow() - report_dt).total_seconds() // 60)
+            except ValueError:
+                pass
+        return None
+
+    def _compute_adaptive_interval(self, data: dict[str, Any]) -> timedelta:
+        """Choose the next poll interval from the vehicle's current situation.
+
+        Cached polls read the cloud copy only (they never wake the vehicle), so
+        the cost model is purely API-side: poll fast in the minutes after the
+        car has actually reported something, at a moderate rate while a charge
+        session is running, and slowly when the car has been silent for hours
+        or it is the middle of the night (the cloud copy cannot change while
+        the car is silent).
+        """
+        base_minutes = self.base_scan_interval.total_seconds() / 60
+        report_age = self._report_age_minutes(data)
+        charging = safely_get_json_value(
+            data,
+            "lastVehicleInfo.vehicleStatusRpt.vehicleStatus.evStatus.batteryCharge",
+            bool,
+        )
+
+        if report_age is not None and report_age < ADAPTIVE_POST_ACTIVITY_WINDOW:
+            minutes = float(ADAPTIVE_POST_ACTIVITY_INTERVAL)
+        elif charging:
+            minutes = min(base_minutes, ADAPTIVE_CHARGING_INTERVAL)
+        else:
+            now = dt_util.now()
+            night = (
+                now.hour >= ADAPTIVE_NIGHT_START_HOUR
+                or now.hour < ADAPTIVE_NIGHT_END_HOUR
+            )
+            dormant = night or (
+                report_age is not None
+                and report_age > ADAPTIVE_DORMANT_AFTER_MINUTES
+            )
+            if dormant:
+                minutes = min(
+                    max(base_minutes * 3, 30), float(ADAPTIVE_DORMANT_MAX_INTERVAL)
+                )
+            else:
+                minutes = base_minutes
+
+        # +-10% jitter so installations do not poll in lockstep
+        return timedelta(minutes=minutes * uniform(0.9, 1.1))
 
     @property
     def door_hood_open(self) -> bool:

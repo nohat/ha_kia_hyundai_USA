@@ -33,6 +33,8 @@ from .kia_hyundai_api.us_hyundai import UsHyundai
 from .kia_hyundai_api.us_genesis import UsGenesis
 
 from .const import (
+    CONF_ADAPTIVE_POLLING,
+    DEFAULT_ADAPTIVE_POLLING,
     CONF_BRAND,
     CONF_DEVICE_ID,
     CONF_OTP_CODE,
@@ -66,6 +68,12 @@ class KiaUvoOptionFlowHandler(OptionsFlow):
                         CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
                     ),
                 ): vol.All(vol.Coerce(int), vol.Range(min=1, max=999)),
+                vol.Optional(
+                    CONF_ADAPTIVE_POLLING,
+                    default=config_entry.options.get(
+                        CONF_ADAPTIVE_POLLING, DEFAULT_ADAPTIVE_POLLING
+                    ),
+                ): bool,
             }
         )
 
